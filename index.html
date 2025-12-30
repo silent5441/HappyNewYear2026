@@ -35,6 +35,7 @@ body{
     z-index:20;
     font-size:0.95rem;
     letter-spacing:1px;
+    text-align:center;
 }
 
 #credit a{
@@ -44,6 +45,12 @@ body{
 
 #credit a:hover{
     text-decoration:underline;
+}
+
+#visits{
+    margin-top:6px;
+    font-size:0.8rem;
+    opacity:0.8;
 }
 
 /* ================= INPUT SCREEN ================= */
@@ -168,11 +175,12 @@ canvas{
 
 <body>
 
-<!-- 🔗 CREDIT -->
+<!-- 🔗 CREDIT + VISITOR COUNT -->
 <div id="credit">
     Dev – <a href="https://www.instagram.com/noob_dev_coder?igsh=MXU4bWM2ZjEwaWF4Nw==" target="_blank">
         Noob_dev_coder
     </a>
+    <div id="visits">Visitors: loading...</div>
 </div>
 
 <canvas id="bg"></canvas>
@@ -202,17 +210,28 @@ canvas{
     <div class="from" id="fromText"></div>
 </div>
 
-<!-- 🔊 LOOPING FIREWORK SOUND (GitHub hosted) -->
+<!-- 🔊 SOUND -->
 <audio id="fireSound" loop preload="auto">
     <source src="fireworks.mp3" type="audio/mpeg">
 </audio>
 
 <script>
-/* ================= SOUND CONTROL ================= */
+/* ================= VISITOR COUNTER ================= */
+// CHANGE namespace/key ONLY if you clone repo
+fetch("https://api.countapi.xyz/hit/silent5441-github/HappyNewYear2026")
+.then(res => res.json())
+.then(data => {
+    document.getElementById("visits").innerText =
+        "Visitors: " + data.value.toLocaleString();
+})
+.catch(()=>{
+    document.getElementById("visits").innerText = "Visitors: --";
+});
+
+/* ================= SOUND ================= */
 const fireSound = document.getElementById("fireSound");
 let soundStarted = false;
 
-// Play sound on first user interaction (required by browser)
 document.addEventListener("click",()=>{
     if(!soundStarted){
         fireSound.play().catch(()=>{});
