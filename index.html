@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>Happy New Year 2026</title>
 
 <style>
@@ -61,18 +62,18 @@ body{
     text-align:center;
 }
 
-/* ================= YEAR (FIXED ALIGNMENT) ================= */
+/* ================= YEAR (FIXED SIZE + SAFE EDGES) ================= */
 .year{
     display:flex;
     justify-content:center;
     align-items:center;
-    font-size:8.5rem;
+    font-size:7.5rem;   /* 🔧 slightly smaller */
     margin-bottom:20px;
 }
 
 .digit{
-    width:100px;              /* FIXED WIDTH FOR PERFECT ALIGNMENT */
-    height:140px;
+    width:90px;         /* 🔧 smaller width */
+    height:125px;
     display:flex;
     align-items:center;
     justify-content:center;
@@ -98,7 +99,7 @@ body{
 
 .flip-inner span{
     width:100%;
-    height:140px;
+    height:125px;
     display:flex;
     align-items:center;
     justify-content:center;
@@ -112,8 +113,8 @@ body{
 
 /* ================= TEXT ================= */
 .wish{
-    font-size:2rem;
-    letter-spacing:5px;
+    font-size:1.9rem;
+    letter-spacing:4px;
     color:var(--gold);
     opacity:0;
     animation:fadeUp 2s ease forwards;
@@ -121,8 +122,8 @@ body{
 }
 
 .from{
-    margin-top:12px;
-    font-size:1.3rem;
+    margin-top:10px;
+    font-size:1.2rem;
     letter-spacing:2px;
     opacity:0;
     animation:fadeUp 2s ease forwards;
@@ -178,21 +179,33 @@ canvas{
     <div class="from" id="fromText"></div>
 </div>
 
+<!-- 🔊 FIREWORK SOUND -->
+<audio id="fireSound" preload="auto">
+    <source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_6d10bcb5b3.mp3?filename=fireworks-112896.mp3" type="audio/mpeg">
+</audio>
+
 <script>
 /* ================= URL NAME HANDLING ================= */
-const params=new URLSearchParams(window.location.search);
-const sender=params.get("from");
+const params = new URLSearchParams(window.location.search);
+const sender = params.get("from");
 
 if(sender){
     document.getElementById("inputScreen").style.display="none";
     startAnimation(decodeURIComponent(sender));
 }
 
+/* Needed for autoplay policies */
+document.addEventListener("click",()=>{
+    const s=document.getElementById("fireSound");
+    if(s.paused) s.play().catch(()=>{});
+},{once:true});
+
 function createLink(){
     const name=document.getElementById("nameInput").value.trim();
     if(!name) return alert("Enter your name");
 
-    const link=window.location.origin+window.location.pathname+"?from="+encodeURIComponent(name);
+    const link=window.location.origin+window.location.pathname+
+               "?from="+encodeURIComponent(name);
     navigator.clipboard.writeText(link);
     alert("Link copied!\n\n"+link);
 }
@@ -219,7 +232,7 @@ class Firework{
         this.x=Math.random()*canvas.width;
         this.y=canvas.height;
         this.ty=Math.random()*canvas.height*0.45;
-        this.speed=8+Math.random()*4;
+        this.speed=7+Math.random()*4;
         this.exploded=false;
         this.p=[];
         this.color=`hsl(${Math.random()*360},100%,60%)`;
@@ -236,20 +249,21 @@ class Firework{
     draw(){
         if(!this.exploded){
             ctx.fillStyle=this.color;
-            ctx.fillRect(this.x,this.y,2,12);
+            ctx.fillRect(this.x,this.y,2,10);
         }else this.p.forEach(x=>x.draw());
     }
     explode(){
         this.exploded=true;
-        for(let i=0;i<120;i++) this.p.push(new Particle(this.x,this.y,this.color));
+        for(let i=0;i<100;i++)
+            this.p.push(new Particle(this.x,this.y,this.color));
     }
 }
 
 class Particle{
     constructor(x,y,c){
         this.x=x; this.y=y; this.c=c;
-        this.vx=(Math.random()-0.5)*10;
-        this.vy=(Math.random()-0.5)*10;
+        this.vx=(Math.random()-0.5)*9;
+        this.vy=(Math.random()-0.5)*9;
         this.a=1;
     }
     update(){
@@ -272,7 +286,7 @@ let f=[];
 function animate(){
     ctx.fillStyle="rgba(0,0,0,0.25)";
     ctx.fillRect(0,0,canvas.width,canvas.height);
-    if(Math.random()<0.05) f.push(new Firework());
+    if(Math.random()<0.045) f.push(new Firework());
     f.forEach(x=>{x.update();x.draw();});
     f=f.filter(x=>!x.exploded||x.p.length>0);
     requestAnimationFrame(animate);
