@@ -26,6 +26,26 @@ body{
     color:#fff;
 }
 
+/* ================= TOP CREDIT ================= */
+#credit{
+    position:fixed;
+    top:12px;
+    left:50%;
+    transform:translateX(-50%);
+    z-index:20;
+    font-size:0.95rem;
+    letter-spacing:1px;
+}
+
+#credit a{
+    color:var(--gold);
+    text-decoration:none;
+}
+
+#credit a:hover{
+    text-decoration:underline;
+}
+
 /* ================= INPUT SCREEN ================= */
 #inputScreen{
     position:absolute;
@@ -62,26 +82,24 @@ body{
     text-align:center;
 }
 
-/* ================= YEAR (FIXED SIZE + SAFE EDGES) ================= */
+/* ================= YEAR ================= */
 .year{
     display:flex;
     justify-content:center;
     align-items:center;
-    font-size:7.5rem;   /* 🔧 slightly smaller */
+    font-size:7.5rem;
     margin-bottom:20px;
 }
 
 .digit{
-    width:90px;         /* 🔧 smaller width */
+    width:90px;
     height:125px;
     display:flex;
     align-items:center;
     justify-content:center;
     line-height:1;
-    text-align:center;
 }
 
-/* Flip box */
 .flip-box{
     overflow:hidden;
     position:relative;
@@ -103,7 +121,6 @@ body{
     display:flex;
     align-items:center;
     justify-content:center;
-    line-height:1;
 }
 
 .new{
@@ -151,6 +168,13 @@ canvas{
 
 <body>
 
+<!-- 🔗 CREDIT -->
+<div id="credit">
+    Dev – <a href="https://www.instagram.com/noob_dev_coder?igsh=MXU4bWM2ZjEwaWF4Nw==" target="_blank">
+        Noob_dev_coder
+    </a>
+</div>
+
 <canvas id="bg"></canvas>
 
 <!-- INPUT SCREEN -->
@@ -160,13 +184,12 @@ canvas{
     <button onclick="createLink()">Create Link</button>
 </div>
 
-<!-- MAIN ANIMATION -->
+<!-- MAIN CONTENT -->
 <div class="container" id="main">
     <div class="year">
         <span class="digit">2</span>
         <span class="digit">0</span>
         <span class="digit">2</span>
-
         <div class="digit flip-box">
             <div class="flip-inner">
                 <span>5</span>
@@ -179,12 +202,24 @@ canvas{
     <div class="from" id="fromText"></div>
 </div>
 
-<!-- 🔊 FIREWORK SOUND -->
-<audio id="fireSound" preload="auto">
-    <source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_6d10bcb5b3.mp3?filename=fireworks-112896.mp3" type="audio/mpeg">
+<!-- 🔊 LOOPING FIREWORK SOUND (GitHub hosted) -->
+<audio id="fireSound" loop preload="auto">
+    <source src="fireworks.mp3" type="audio/mpeg">
 </audio>
 
 <script>
+/* ================= SOUND CONTROL ================= */
+const fireSound = document.getElementById("fireSound");
+let soundStarted = false;
+
+// Play sound on first user interaction (required by browser)
+document.addEventListener("click",()=>{
+    if(!soundStarted){
+        fireSound.play().catch(()=>{});
+        soundStarted = true;
+    }
+},{once:true});
+
 /* ================= URL NAME HANDLING ================= */
 const params = new URLSearchParams(window.location.search);
 const sender = params.get("from");
@@ -194,66 +229,62 @@ if(sender){
     startAnimation(decodeURIComponent(sender));
 }
 
-/* Needed for autoplay policies */
-document.addEventListener("click",()=>{
-    const s=document.getElementById("fireSound");
-    if(s.paused) s.play().catch(()=>{});
-},{once:true});
-
 function createLink(){
-    const name=document.getElementById("nameInput").value.trim();
+    const name = document.getElementById("nameInput").value.trim();
     if(!name) return alert("Enter your name");
 
-    const link=window.location.origin+window.location.pathname+
-               "?from="+encodeURIComponent(name);
+    const link =
+        window.location.origin +
+        window.location.pathname +
+        "?from=" + encodeURIComponent(name);
+
     navigator.clipboard.writeText(link);
-    alert("Link copied!\n\n"+link);
+    alert("Link copied!\n\n" + link);
 }
 
-/* ================= START ANIMATION ================= */
 function startAnimation(name){
     document.getElementById("main").style.display="block";
-    document.getElementById("fromText").textContent="— From "+name;
+    document.getElementById("fromText").textContent = "— From " + name;
 }
 
 /* ================= FIREWORKS ================= */
-const canvas=document.getElementById("bg");
-const ctx=canvas.getContext("2d");
-resize();
-addEventListener("resize",resize);
+const canvas = document.getElementById("bg");
+const ctx = canvas.getContext("2d");
 
 function resize(){
-    canvas.width=innerWidth;
-    canvas.height=innerHeight;
+    canvas.width = innerWidth;
+    canvas.height = innerHeight;
 }
+resize();
+addEventListener("resize", resize);
 
 class Firework{
     constructor(){
-        this.x=Math.random()*canvas.width;
-        this.y=canvas.height;
-        this.ty=Math.random()*canvas.height*0.45;
-        this.speed=7+Math.random()*4;
-        this.exploded=false;
-        this.p=[];
-        this.color=`hsl(${Math.random()*360},100%,60%)`;
+        this.x = Math.random()*canvas.width;
+        this.y = canvas.height;
+        this.ty = Math.random()*canvas.height*0.45;
+        this.speed = 7 + Math.random()*4;
+        this.exploded = false;
+        this.p = [];
+        this.color = `hsl(${Math.random()*360},100%,60%)`;
     }
     update(){
         if(!this.exploded){
-            this.y-=this.speed;
-            if(this.y<=this.ty) this.explode();
+            this.y -= this.speed;
+            if(this.y <= this.ty) this.explode();
         }else{
             this.p.forEach(x=>x.update());
-            this.p=this.p.filter(x=>x.a>0);
+            this.p = this.p.filter(x=>x.a>0);
         }
     }
     draw(){
         if(!this.exploded){
-            ctx.fillStyle=this.color;
+            ctx.fillStyle = this.color;
             ctx.fillRect(this.x,this.y,2,10);
         }else this.p.forEach(x=>x.draw());
     }
     explode(){
-        this.exploded=true;
+        this.exploded = true;
         for(let i=0;i<100;i++)
             this.p.push(new Particle(this.x,this.y,this.color));
     }
